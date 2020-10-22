@@ -1,0 +1,26 @@
+{
+    "name": "vertx666/symfony-smsru-notifier",
+    "type": "symfony-bridge",
+    "description": "Symfony SMS.ru Notifier Bridge",
+    "keywords": ["sms", "sms.ru", "smsru", "notifier"],
+    "homepage": "https://github.com/vertx666/symfony-smsru-notifier",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rinat Khalekov",
+            "email": "rh@ristudio.ru"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "symfony/http-client": "^4.3|^5.0",
+        "symfony/notifier": "^5.1"
+    },
+    "autoload": {
+        "psr-4": { "Symfony\\Component\\Notifier\\Bridge\\Smsru\\": "" },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev"
+}
