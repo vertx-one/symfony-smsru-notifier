@@ -1,6 +1,6 @@
 <?php
 
-namespace Vertx666\Symfony\Component\Notifier\Bridge\Smsru
+namespace Vertx666\Symfony\Component\Notifier\Bridge\Smsru;
 
 use Symfony\Component\Notifier\Exception\LogicException;
 use Symfony\Component\Notifier\Exception\TransportException;
@@ -15,12 +15,14 @@ final class SmsruTransport extends AbstractTransport
 {
     protected const HOST = 'sms.ru';
 
-    private $apiId;
+    /** @var array */
+    private $auth;
+    /** @var string|null */
     private $from;
 
-    public function __construct(string $api_id, string $from, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
+    public function __construct(array $auth, ?string $from = null, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
     {
-        $this->apiId = $api_id;
+        $this->auth = $auth;
         $this->from = $from;
 
         parent::__construct($client, $dispatcher);
@@ -43,13 +45,16 @@ final class SmsruTransport extends AbstractTransport
         }
 
         $endpoint = sprintf('https://%s/sms/send', $this->getEndpoint());
-        $response = $this->client->request('POST', $endpoint, [
-            'body' => [
-                "api_id" => $this->apiId,
+        $body = array_merge(
+            $this->auth,
+            [
                 "to" => $message->getPhone(),
                 "msg" => $message->getSubject(),
                 "json" => 1,
-            ],
+            ]
+        );
+        $response = $this->client->request('POST', $endpoint, [
+            'body' => $body,
         ]);
 
 
@@ -59,7 +64,7 @@ final class SmsruTransport extends AbstractTransport
 
         $body = $response->toArray(false);
 
-        if($body['status_code'] !== 100) {
+        if ($body['status_code'] !== 100) {
             throw new TransportException('Unable to send the SMS', $response);
         }
     }

@@ -15,17 +15,29 @@ final class SmsruTransportFactory extends AbstractTransportFactory
     public function create(Dsn $dsn): TransportInterface
     {
         $scheme = $dsn->getScheme();
-        $accountSid = $this->getUser($dsn);
-        $authToken = $this->getPassword($dsn);
+
+        if ('smsru' !== $scheme) {
+            throw new UnsupportedSchemeException($dsn, 'smsru', $this->getSupportedSchemes());
+        }
+
+        $api_id = $dsn->getOption('api_id');
+
+        if($api_id) {
+            $auth = [
+                'api_id' => $api_id
+            ];
+        } else {
+            $auth = [
+                'login' => $this->getUser($dsn),
+                'password' => $this->getPassword($dsn),
+            ];
+        }
+
         $from = $dsn->getOption('from');
         $host = 'default' === $dsn->getHost() ? null : $dsn->getHost();
         $port = $dsn->getPort();
 
-        if ('smsru' === $scheme) {
-            return (new SmsruTransport($accountSid, $authToken, $from, $this->client, $this->dispatcher))->setHost($host)->setPort($port);
-        }
-
-        throw new UnsupportedSchemeException($dsn, 'smsru', $this->getSupportedSchemes());
+        return (new SmsruTransport($auth, $from, $this->client, $this->dispatcher))->setHost($host)->setPort($port);
     }
 
     protected function getSupportedSchemes(): array
